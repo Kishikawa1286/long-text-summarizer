@@ -1,0 +1,29 @@
+{
+  "name": "summa-doc",
+  "version": "1.0.0",
+  "license": "The Unlicense",
+  "author": "Kentaro Ishikawa",
+  "type": "module",
+  "scripts": {
+    "start": "npx tsc && node /workspaces/summa-doc/dist/main.js"
+  },
+  "dependencies": {
+    "chatgpt": "^5.2.2",
+    "dotenv": "^16.0.3",
+    "html-to-md": "^0.8.3",
+    "puppeteer": "^19.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.2",
+    "@types/puppeteer": "^7.0.4",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "eslint": "^8.36.0",
+    "eslint-config-esnext": "^4.1.0",
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.4",
+    "typescript": "^5.0.4"
+  }
+}

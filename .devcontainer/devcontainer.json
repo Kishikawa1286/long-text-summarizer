@@ -1,0 +1,61 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "summa-doc",
+  "dockerFile": "Dockerfile",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers-contrib/features/bash-command:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "configureZshAsDefaultShell": true
+    }
+  },
+  // Improve yarn install performance
+  "mounts": [
+    // https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-a-targeted-named-volume
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    /**
+     * https://github.com/microsoft/vscode-dev-containers/blob/main/script-library/docs/docker-in-docker.md
+     * If you want any containers or volumes you create inside the container to survive it being deleted, you can use a "named volume".
+     * And the following to .devcontainer/devcontainer.json if you are referencing an image or Dockerfile replacing dind-var-lib-docker with a unique name for your container.
+     */
+    "source=${localWorkspaceFolderBasename}-dind-var-lib-docker,target=/var/lib/docker,type=volume"
+  ],
+  "forwardPorts": [3000, 8000],
+  "customizations": {
+    "vscode": {
+      // Copied from: https://github.com/imbhargav5/nextbase-nextjs13-supabase-starter/blob/main/.vscode/settings.json
+      "settings": {
+        "eslint.workingDirectories": ["./"],
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true,
+          "source.organizeImports": true
+        },
+        "eslint.codeActionsOnSave.rules": ["!@typescript-eslint/*", "*"],
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "eslint.packageManager": "yarn",
+        "eslint.validate": ["javascript", "typescript"],
+        "files.exclude": {
+          "**/.git": true,
+          "**/.svn": true,
+          "**/.hg": true,
+          "**/CVS": true,
+          "**/.DS_Store": true,
+          "**/node_modules": false
+        },
+        "typescript.enablePromptUseWorkspaceTsdk": true,
+        "[typescript]": {
+          "editor.tabSize": 2
+        }
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "christian-kohler.npm-intellisense",
+        "unional.vscode-sort-package-json"
+      ]
+    }
+  }
+}
