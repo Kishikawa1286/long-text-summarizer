@@ -4,3 +4,4 @@ output/
 
 .env
 input.txt
+*.sqlite

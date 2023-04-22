@@ -5,13 +5,14 @@
   "author": "Kentaro Ishikawa",
   "type": "module",
   "scripts": {
-    "start": "npx tsc && node /workspaces/summa-doc/dist/main.js"
+    "create-list": "npx tsc && node ./dist/create-list.js"
   },
   "dependencies": {
     "chatgpt": "^5.2.2",
     "dotenv": "^16.0.3",
     "html-to-md": "^0.8.3",
-    "puppeteer": "^19.9.1"
+    "puppeteer": "^19.9.1",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "@types/node": "^18.15.2",

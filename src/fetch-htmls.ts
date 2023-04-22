@@ -1,10 +1,9 @@
 import * as puppeteer from "puppeteer";
 
-export const fetchHtmlFromUrls = async (urls: string[]): Promise<string[]> => {
-  const browser = await puppeteer.launch({
-    executablePath: "/usr/bin/chromium",
-    args: ["--no-sandbox", "--disable-gpu"],
-  });
+export const fetchHtmlFromUrls = async (
+  urls: string[],
+  browser: puppeteer.Browser
+): Promise<string[]> => {
   const htmlContents: string[] = [];
 
   for (const url of urls) {
@@ -20,4 +19,18 @@ export const fetchHtmlFromUrls = async (urls: string[]): Promise<string[]> => {
 
   await browser.close();
   return htmlContents;
+};
+
+export const fetchHtmlFromUrl = async (
+  url: string,
+  page: puppeteer.Page
+): Promise<string | null> => {
+  try {
+    await page.goto(url, { waitUntil: "load", timeout: 5000 });
+    const html = await page.content();
+    return html;
+  } catch (error) {
+    console.error(`Failed to fetch html for url ${url}: ${error}`);
+    return null;
+  }
 };

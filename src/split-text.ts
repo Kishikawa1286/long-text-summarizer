@@ -12,7 +12,7 @@
  */
 export const splitTextByCharCount = (
   text: string,
-  charsPerChunk = 1000
+  charsPerChunk = 2500
 ): string[] => {
   if (text == null) {
     throw new Error("text must not be null or undefined");
@@ -50,4 +50,13 @@ export const splitTextByCharCount = (
   }
 
   return chunks;
+};
+
+export const removeTextBeforeFirstHeading = (markdownText: string): string => {
+  const match = markdownText.match(/^#{1,6} .*/m);
+  if (!match) {
+    return markdownText;
+  }
+  const firstHeadingPosition = match.index;
+  return markdownText.slice(firstHeadingPosition);
 };

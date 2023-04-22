@@ -2,10 +2,14 @@ import * as fs from "fs";
 import html2md from "html-to-md";
 import util from "util";
 
+import puppeteer from "puppeteer";
 import { executeSequentially } from "./src/execute-sequentially.js";
 import { fetchHtmlFromUrls } from "./src/fetch-htmls.js";
-import { splitTextByCharCount } from "./src/split-text.js";
-import { summerize, summerizePrompt } from "./src/unofficial-chatgpt.js";
+import {
+  removeTextBeforeFirstHeading,
+  splitTextByCharCount,
+} from "./src/split-text.js";
+import { summerizePrompt } from "./src/unofficial-chatgpt.js";
 
 const readUrlsFromFile = async (filePath: string): Promise<string[]> => {
   const content = await fs.promises.readFile(filePath, { encoding: "utf-8" });
@@ -41,28 +45,38 @@ const appendFineTuningData = async (
 
   try {
     const urls = await readUrlsFromFile(inputFilePath);
-    const htmlContents = await fetchHtmlFromUrls(urls);
-    const htmls = htmlContents.map((html) =>
+
+    const browser = await puppeteer.launch({
+      executablePath: "/usr/bin/chromium",
+      args: ["--no-sandbox", "--disable-gpu"],
+    });
+    const htmlContents = await fetchHtmlFromUrls(urls, browser);
+    await browser.close();
+
+    const mds = htmlContents.map((html) =>
       html2md(html, {
         skipTags: ["a", "img", "button"],
         renderCustomTags: "SKIP",
       })
     );
-    const chunks = htmls.map((html) => splitTextByCharCount(html)).flat();
+    const chunks = mds
+      .map((md) => removeTextBeforeFirstHeading(md))
+      .map((md) => splitTextByCharCount(md))
+      .flat();
     const data = await executeSequentially(
       chunks,
       async (text) => {
         try {
-          const completion = await summerize(text);
+          // const completion = await summerize(text);
           const prompt = summerizePrompt(text);
-          const jsonObj: FineTuningData = { completion, prompt };
+          const jsonObj: FineTuningData = { completion: prompt, prompt };
           return jsonObj;
         } catch (e) {
           console.error(e);
           return { completion: "", prompt: "" };
         }
       },
-      1000
+      500
     );
     if (data === undefined) {
       console.error("Variable json is undefined.");
