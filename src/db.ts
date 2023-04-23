@@ -1,6 +1,7 @@
 import * as sqlite3 from "sqlite3";
 
 export interface TrainingData {
+  id: number;
   url: string;
   markdown: string;
   done: boolean;
@@ -31,6 +32,7 @@ export const run = async (
 
 const validateTrainingData = (data: TrainingData): boolean => {
   if (
+    typeof data.id !== "number" ||
     typeof data.url !== "string" ||
     typeof data.markdown !== "string" ||
     typeof data.done !== "boolean" ||
@@ -40,6 +42,25 @@ const validateTrainingData = (data: TrainingData): boolean => {
     return false;
   }
   return true;
+};
+
+export const getDataById = async (
+  db: sqlite3.Database,
+  id: number
+): Promise<TrainingData | null> => {
+  return new Promise<TrainingData | null>((resolve, reject) => {
+    db.get(
+      "SELECT * FROM training_data WHERE id = ?",
+      [id],
+      (err, row: TrainingData | null) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row ? row : null);
+        }
+      }
+    );
+  });
 };
 
 export const getDataByUrl = async (
@@ -106,12 +127,14 @@ export const getNextData = async (
 
 export const addTrainingData = async (
   db: sqlite3.Database,
-  data: TrainingData
-): Promise<void> => {
-  if (!validateTrainingData(data)) {
-    throw new Error("Invalid TrainingData object");
+  data: {
+    url: string;
+    markdown: string;
+    done: boolean;
+    prompt: string;
+    completion: string;
   }
-
+): Promise<void> => {
   await run(
     db,
     `
@@ -122,7 +145,7 @@ export const addTrainingData = async (
   );
 };
 
-export const editData = async (
+export const editDataById = async (
   db: sqlite3.Database,
   data: TrainingData
 ): Promise<void> => {
@@ -130,7 +153,9 @@ export const editData = async (
     throw new Error("Invalid TrainingData object");
   }
 
-  const existingData = await getDataByUrl(db, data.url);
+  const { id } = data;
+
+  const existingData = await getDataById(db, id);
 
   if (existingData) {
     await run(
@@ -138,12 +163,12 @@ export const editData = async (
       `
       UPDATE training_data
       SET markdown = ?, done = ?, prompt = ?, completion = ?
-      WHERE url = ?
+      WHERE id = ?
     `,
-      [data.markdown, data.done ? 1 : 0, data.prompt, data.completion, data.url]
+      [data.markdown, data.done ? 1 : 0, data.prompt, data.completion, id]
     );
   } else {
-    throw new Error("The specified URL does not exist in the database");
+    throw new Error("The specified id does not exist in the database");
   }
 };
 
@@ -177,3 +202,20 @@ export const deleteRowsWithShortMarkdown = async (
     minLength,
   ]);
 };
+
+export const getIncompleteData = (
+  db: sqlite3.Database,
+  limit = 150
+): Promise<TrainingData[]> =>
+  new Promise<TrainingData[]>((resolve, reject) => {
+    db.all(
+      `SELECT * FROM training_data WHERE done = 0 LIMIT ${limit}`,
+      (err, rows: TrainingData[]) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      }
+    );
+  });

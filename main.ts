@@ -1,89 +1,67 @@
-import * as fs from "fs";
-import html2md from "html-to-md";
-import util from "util";
-
-import puppeteer from "puppeteer";
-import { executeSequentially } from "./src/execute-sequentially.js";
-import { fetchHtmlFromUrls } from "./src/fetch-htmls.js";
-import {
-  removeTextBeforeFirstHeading,
-  splitTextByCharCount,
-} from "./src/split-text.js";
-import { summerizePrompt } from "./src/unofficial-chatgpt.js";
-
-const readUrlsFromFile = async (filePath: string): Promise<string[]> => {
-  const content = await fs.promises.readFile(filePath, { encoding: "utf-8" });
-  const urls = content.split("\n").map((url) => url.trim());
-  return urls;
-};
-
-interface FineTuningData {
-  prompt: string;
-  completion: string;
-}
-
-const appendFineTuningData = async (
-  inputs: FineTuningData[],
-  filePath: string
-): Promise<void> => {
-  // Initialize the JSON array in the output file
-  await util.promisify(fs.writeFile)(filePath, "[\n", "utf-8");
-
-  for (const input of inputs) {
-    const json = JSON.stringify(input, null, 2);
-    await util.promisify(fs.appendFile)(filePath, json + ",\n", "utf-8");
-  }
-
-  // Close the JSON array in the output file
-  const currentContent = await util.promisify(fs.readFile)(filePath, "utf-8");
-  const updatedContent = currentContent.slice(0, -2) + "\n]";
-  await util.promisify(fs.writeFile)(filePath, updatedContent, "utf-8");
-};
+import ora from "ora";
+import sqlite3 from "sqlite3";
+import { editDataById, getIncompleteData } from "./src/db.js";
+import { summerize, summerizePrompt } from "./src/unofficial-chatgpt.js";
 
 (async () => {
-  const inputFilePath = "input.txt";
-
-  try {
-    const urls = await readUrlsFromFile(inputFilePath);
-
-    const browser = await puppeteer.launch({
-      executablePath: "/usr/bin/chromium",
-      args: ["--no-sandbox", "--disable-gpu"],
-    });
-    const htmlContents = await fetchHtmlFromUrls(urls, browser);
-    await browser.close();
-
-    const mds = htmlContents.map((html) =>
-      html2md(html, {
-        skipTags: ["a", "img", "button"],
-        renderCustomTags: "SKIP",
-      })
-    );
-    const chunks = mds
-      .map((md) => removeTextBeforeFirstHeading(md))
-      .map((md) => splitTextByCharCount(md))
-      .flat();
-    const data = await executeSequentially(
-      chunks,
-      async (text) => {
-        try {
-          // const completion = await summerize(text);
-          const prompt = summerizePrompt(text);
-          const jsonObj: FineTuningData = { completion: prompt, prompt };
-          return jsonObj;
-        } catch (e) {
-          console.error(e);
-          return { completion: "", prompt: "" };
-        }
-      },
-      500
-    );
-    if (data === undefined) {
-      console.error("Variable json is undefined.");
-    } else {
-      appendFineTuningData(data, "output/fine_tuning_data.json");
-    }
-  } catch (error) {
-    console.error(`Error: ${error}`);
+  const filePath = process.env.DB_PATH;
+  if (filePath == null) {
+    throw new Error("environmental variable OPENAI_ACCESS_TOKEN is not set.");
   }
+  console.log(`DB_PATH: ${filePath}`);
+  const db = new sqlite3.Database(filePath);
+
+  /**
+   * This is an infinite loop that fetches and processes incomplete data from the database.
+   * It only breaks when there's no more incomplete data.
+   */
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const data = await getIncompleteData(db, 50);
+    if (data.length === 0) {
+      break;
+    }
+
+    /**
+     * This loop iterates through the incomplete data items and processes them.
+     * For each item, it generates a summary prompt, summarizes the markdown content,
+     * updates the database, and then waits for 1 second.
+     */
+    const progressSpinner = ora("Processing data...").start();
+    for (let i = 0; i < data.length; i++) {
+      const { id, url, markdown } = data[i];
+
+      progressSpinner.text = `Processing data ${i + 1} of ${data.length}`;
+
+      const prompt = summerizePrompt(markdown);
+      const completion = await summerize(markdown);
+      await editDataById(db, {
+        id,
+        url,
+        markdown,
+        prompt,
+        completion,
+        done: true,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    progressSpinner.succeed("Data processing complete!");
+
+    /**
+     * This is a loop that displays a countdown timer for 30 minutes.
+     * It updates the waiting spinner text every second with the remaining time.
+     */
+    const waitingSpinner = ora(
+      "Waiting for 30 minutes before the next batch..."
+    ).start();
+    for (let i = 30 * 60; i > 0; i--) {
+      const minutes = Math.floor(i / 60);
+      const seconds = i % 60;
+      waitingSpinner.text = `${minutes} minutes and ${seconds} seconds remaining...`;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    waitingSpinner.succeed("Starting next batch...");
+  }
+
+  db.close();
 })();

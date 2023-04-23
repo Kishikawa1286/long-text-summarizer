@@ -9,7 +9,7 @@ import {
   clearDatabase,
   deleteRowsWithShortMarkdown,
   deleteTrainingDataByUrl,
-  editData,
+  editDataById,
   getFirstData,
   getNextData,
 } from "./src/db.js";
@@ -87,7 +87,8 @@ const START_URLS = [
     const chunks = splitTextByCharCount(markdown);
     for (let i = 0; i < chunks.length; i++) {
       if (i === 0) {
-        await editData(db, {
+        await editDataById(db, {
+          id: currentData.id,
           url: currentData.url,
           markdown: chunks[i],
           done: false,
