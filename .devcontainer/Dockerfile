@@ -37,5 +37,7 @@ RUN npm init -y &&  \
 RUN chmod -R 777 . \
     && chown node node_modules
 
+RUN yarn
+
 # Run everything after as non-privileged user.
 USER pptruser

@@ -54,8 +54,7 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "christian-kohler.npm-intellisense",
-        "unional.vscode-sort-package-json",
-        "qwtel.sqlite-viewer"
+        "unional.vscode-sort-package-json"
       ]
     }
   }

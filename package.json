@@ -5,16 +5,12 @@
   "author": "Kentaro Ishikawa",
   "type": "module",
   "scripts": {
-    "create-list": "npx tsc && node ./dist/create-list.js",
     "start": "npx tsc && node ./dist/main.js"
   },
   "dependencies": {
     "chatgpt": "^5.2.2",
     "dotenv": "^16.0.3",
-    "html-to-md": "^0.8.3",
-    "ora": "^6.3.0",
-    "puppeteer": "^19.9.1",
-    "sqlite3": "^5.1.6"
+    "ora": "^6.3.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.2",

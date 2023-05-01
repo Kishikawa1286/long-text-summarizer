@@ -10,9 +10,9 @@
  */
 export const executeSequentially = async <S, T>(
   list: S[],
-  f: (item: S) => Promise<T | void> | T | void,
+  f: (item: S) => Promise<T> | T,
   waitFor = 500
-): Promise<T[] | void> => {
+): Promise<T[]> => {
   if (f == null) {
     throw new TypeError("The function f is null or undefined.");
   }
@@ -27,9 +27,5 @@ export const executeSequentially = async <S, T>(
     await new Promise((resolve) => setTimeout(resolve, waitFor));
   }
 
-  if (results.length === 0 || results.every((result) => result === undefined)) {
-    return;
-  } else {
-    return results;
-  }
+  return results;
 };
