@@ -18,8 +18,10 @@ export const executeSequentially = async <S, T>(
   }
 
   const results: T[] = [];
+  let cnt = 0;
 
   for (const item of list) {
+    console.log(`Processing ${++cnt} of ${list.length}...`);
     const result = await Promise.resolve(f(item));
     if (result !== undefined) {
       results.push(result);

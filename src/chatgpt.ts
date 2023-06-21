@@ -1,4 +1,4 @@
-import { ChatGPTUnofficialProxyAPI } from "chatgpt";
+import { ChatGPTAPI } from "chatgpt";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -16,16 +16,12 @@ ${text}
 \`\`\``;
 
 export const summerize = async (text: string) => {
-  const accessToken = process.env.OPENAI_ACCESS_TOKEN;
-  if (accessToken == null) {
-    throw new Error("environmental variable OPENAI_ACCESS_TOKEN is not set.");
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey == null) {
+    throw new Error("environmental variable OPENAI_API_KEY is not set.");
   }
 
-  const api = new ChatGPTUnofficialProxyAPI({
-    accessToken,
-    apiReverseProxyUrl: "https://ai.fakeopen.com/api/conversation",
-    debug: false,
-  });
+  const api = new ChatGPTAPI({ apiKey });
 
   const res = await api.sendMessage(summerizePrompt(text));
   return res.text;

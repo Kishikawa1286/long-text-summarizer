@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv";
 import fs from "fs";
+import { summerize } from "./src/chatgpt.js";
 import { executeSequentially } from "./src/execute-sequentially.js";
 import { splitTextByCharCount } from "./src/split-text.js";
-import { summerize } from "./src/unofficial-chatgpt.js";
 
 dotenv.config();
 
@@ -13,8 +13,8 @@ dotenv.config();
   }
   const text = fs.readFileSync(filePath, "utf-8");
 
-  const chunks = splitTextByCharCount(text);
-  const summeries = await executeSequentially(chunks, summerize, 2000);
+  const chunks = splitTextByCharCount(text, 10000);
+  const summeries = await executeSequentially(chunks, summerize, 10000);
   for (const summery of summeries) {
     console.log(summery);
     console.log("\n");
