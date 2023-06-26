@@ -53,7 +53,6 @@ export const summerize = async (text: string) => {
       return text;
     }
   } catch (error) {
-    console.log((error as any).response.data.error);
     console.error("Server disconnected. Returning original text.");
     return text;
   }
