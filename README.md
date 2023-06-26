@@ -16,7 +16,7 @@ cp .env.example .env
 
 1. Set `OPENAI_API_KEY` .
    You can find it in https://platform.openai.com/account/api-keys
-2. Set `FILE_PATH`. This is the path of the file to be summarized.
+2. Set `INPUT_FILE_PATH`, which is the path of the file to be summarized and `OUTPUT_FILE_PATH`, which is the path of the file to output the summary.
 
 ## Usage
 

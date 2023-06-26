@@ -4,7 +4,7 @@
  *
  * @param list The array of elements to process sequentially.
  * @param f The function to apply to each element. Returns a T, Promise<T>, void, or Promise<void>.
- * @param waitFor The time to wait after each function call, in milliseconds. Defaults to 500 milliseconds.
+ * @param waitFor The time to wait after each function call, in **milliseconds**. Defaults to 500 milliseconds.
  * @returns A Promise that resolves when all elements have been processed. If the function returns void or Promise<void>, a Promise<void> is returned. Otherwise, the array of results from applying the function to each element is returned.
  * @throws TypeError If the function f is null or undefined.
  */

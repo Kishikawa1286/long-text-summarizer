@@ -1,4 +1,4 @@
-import { ChatGPTAPI } from "chatgpt";
+import axios from "axios";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -21,8 +21,40 @@ export const summerize = async (text: string) => {
     throw new Error("environmental variable OPENAI_API_KEY is not set.");
   }
 
-  const api = new ChatGPTAPI({ apiKey });
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${apiKey}`,
+  };
+  const data = {
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "user",
+        content: summerizePrompt(text),
+      },
+    ],
+  };
 
-  const res = await api.sendMessage(summerizePrompt(text));
-  return res.text;
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      data,
+      { headers }
+    );
+    try {
+      const translatedText = response.data.choices[0].message.content;
+      if (typeof translatedText !== "string")
+        throw new Error(
+          "response.data.choices[0].message.content is not a string."
+        );
+      return translatedText;
+    } catch (error) {
+      console.error(`Error occurred. response: ${response}`);
+      return text;
+    }
+  } catch (error) {
+    console.log((error as any).response.data.error);
+    console.error("Server disconnected. Returning original text.");
+    return text;
+  }
 };

@@ -7,16 +7,19 @@ import { splitTextByCharCount } from "./src/split-text.js";
 dotenv.config();
 
 (async () => {
-  const filePath = process.env.FILE_PATH;
-  if (filePath == null) {
-    throw new Error("environmental variable FILE_PATH is not set.");
+  const inputFilePath = process.env.INPUT_FILE_PATH;
+  if (inputFilePath == null) {
+    throw new Error("environmental variable INPUT_FILE_PATH is not set.");
   }
-  const text = fs.readFileSync(filePath, "utf-8");
+  const outputFilePath = process.env.OUTPUT_FILE_PATH;
+  if (outputFilePath == null) {
+    throw new Error("environmental variable OUTPUT_FILE_PATH is not set.");
+  }
+  const text = fs.readFileSync(inputFilePath, "utf-8");
 
-  const chunks = splitTextByCharCount(text, 10000);
-  const summeries = await executeSequentially(chunks, summerize, 10000);
-  for (const summery of summeries) {
-    console.log(summery);
-    console.log("\n");
-  }
+  const chunks = splitTextByCharCount(text, 3000);
+
+  const summeries = await executeSequentially(chunks, summerize, 500);
+
+  fs.writeFileSync(outputFilePath, summeries.join("\n\n"), "utf-8");
 })();

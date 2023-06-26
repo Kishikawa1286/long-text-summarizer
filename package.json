@@ -1,14 +1,14 @@
 {
   "name": "summa-doc",
   "version": "1.0.0",
-  "license": "The Unlicense",
+  "license": "Unlicense",
   "author": "Kentaro Ishikawa",
   "type": "module",
   "scripts": {
     "start": "npx tsc && node ./dist/main.js"
   },
   "dependencies": {
-    "chatgpt": "^5.2.2",
+    "axios": "^1.4.0",
     "dotenv": "^16.0.3"
   },
   "devDependencies": {
