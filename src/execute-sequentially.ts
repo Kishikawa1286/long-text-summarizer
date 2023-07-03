@@ -10,7 +10,7 @@
  */
 export const executeSequentially = async <S, T>(
   list: S[],
-  f: (item: S) => Promise<T> | T,
+  f: (item: S, index: number) => Promise<T> | T,
   waitFor = 500
 ): Promise<T[]> => {
   if (f == null) {
@@ -18,15 +18,15 @@ export const executeSequentially = async <S, T>(
   }
 
   const results: T[] = [];
-  let cnt = 0;
+  let index = 0;
 
   for (const item of list) {
-    console.log(`Processing ${++cnt} of ${list.length}...`);
-    const result = await Promise.resolve(f(item));
+    const result = await Promise.resolve(f(item, index));
     if (result !== undefined) {
       results.push(result);
     }
     await new Promise((resolve) => setTimeout(resolve, waitFor));
+    index++;
   }
 
   return results;

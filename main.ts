@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import fs from "fs";
+import ora from "ora";
 import { summerize } from "./src/chatgpt.js";
 import { executeSequentially } from "./src/execute-sequentially.js";
 import { splitTextByCharCount } from "./src/split-text.js";
@@ -19,7 +20,16 @@ dotenv.config();
 
   const chunks = splitTextByCharCount(text, 3000);
 
-  const summeries = await executeSequentially(chunks, summerize, 500);
+  const spinner = ora().start();
+  const summeries = await executeSequentially(
+    chunks,
+    async (chunk, i) => {
+      spinner.text = `Processing ${i + 1} of ${chunks.length}...`;
+      return summerize(chunk);
+    },
+    500
+  );
+  spinner.succeed("Processing complete!");
 
   fs.writeFileSync(outputFilePath, summeries.join("\n\n"), "utf-8");
 })();

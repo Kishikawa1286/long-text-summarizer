@@ -51,12 +51,3 @@ export const splitTextByCharCount = (
 
   return chunks;
 };
-
-export const removeTextBeforeFirstHeading = (markdownText: string): string => {
-  const match = markdownText.match(/^#{1,6} .*/m);
-  if (!match) {
-    return markdownText;
-  }
-  const firstHeadingPosition = match.index;
-  return markdownText.slice(firstHeadingPosition);
-};
