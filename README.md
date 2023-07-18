@@ -20,14 +20,14 @@ cp .env.example .env
 
 ## Usage
 
-1. Copy text to be summarized to the file specified in .env
+1. Copy text to be summarized to the file specified in `.env`
 2. Run `yarn run start`
 
 ## Example
 
 ### Input
 
-Input (content of `/workspaces/long-text-summarizer/text.txt` that is specified in `.env`) is
+Input (content of `/workspaces/long-text-summarizer/text.txt` in `.env`) is
 
 <details>
 <summary>Input Text</summary>
